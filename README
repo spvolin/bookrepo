@@ -1,27 +1,54 @@
-1. Clone or save project
-2. In project dir do:
-> mvn test
-> mvn package 
-> java -jar target\BookRepo2-1.0.0.jar --spring.profiles.active=local  
-3. To do some CRUD operations open browser at http://localhost:8080/
-4. To look at REST controller spec open browser at http://localhost:8080/swagger-ui.html
+DB setup
+========
+1. Install Postgresql 9.x
+2. Create database: bookrepo
+3. Change datasource setting properly in application.properties:
+- host
+- port
+- dbname
+- username
+- password
 
-Profiles:
-local, default: app works with H2
-prod: app works with Posgresql
-dev: app works with MySQL
+spring.datasource.url= jdbc:postgresql://localhost:5434/bookrepo
+spring.datasource.username= postgres
+spring.datasource.password= secretpass
+spring.datasource.driver-class-name= org.postgresql.Driver
+spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQL94Dialect
 
-Eg. to run app with postgresql as BE do from project dir:
-> java -jar target\BookRepo2-1.0.0.jar --spring.profiles.active=prod  
+4. Add this to treat lobs properly in Postgresql
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
 
-To run app from Eclipse IDE just add VM arguments toEclipse project: 
-for "default":
-  -Dspring.profiles.active=local 
-for "prod":
-  -Dspring.profiles.active=prod
-for "dev":
-  -Dspring.profiles.active=dev 
-   
+5. Initially put "create-drop":
+spring.jpa.hibernate.ddl-auto = create-drop
+1st run app create scheme in DB
+Before 2nd run switch this property to "update"!!!!:
+spring.jpa.hibernate.ddl-auto = update
+Don't forget otherwise you will loss all your data in db.
+
+Application
+=========== 
+1. Clone or save project from github:
+https://github.com/spvolin/bookrepo
+
+2. In project dir:
+Build package:
+> mvn clean package
+Run app: 
+> java -jar target\bookrepo-1.3.0.jar   
+
+3. Go to browser at http://localhost:8080/
+4. Signup
+5. Signin
+6. Do some CRUD ops with books:
+- create book with or w/o files uploads (multiple files upload allowed)
+- update book w/o files
+- delete book w/o files
+- filter books by Author|Title|ISBN
+- download file of a book
+That's all folk!)
+
+7. To look at REST controller spec open browser at http://localhost:8080/swagger-ui.html
+
 Ref.
 http://websystique.com/spring-boot/spring-boot-angularjs-spring-data-jpa-crud-app-example/
 https://www.callicoder.com/spring-boot-file-upload-download-jpa-hibernate-mysql-database-example/
