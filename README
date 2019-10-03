@@ -1,0 +1,29 @@
+1. Clone or save project
+2. In project dir do:
+> mvn test
+> mvn package 
+> java -jar target\BookRepo2-1.0.0.jar --spring.profiles.active=local  
+3. To do some CRUD operations open browser at http://localhost:8080/
+4. To look at REST controller spec open browser at http://localhost:8080/swagger-ui.html
+
+Profiles:
+local, default: app works with H2
+prod: app works with Posgresql
+dev: app works with MySQL
+
+Eg. to run app with postgresql as BE do from project dir:
+> java -jar target\BookRepo2-1.0.0.jar --spring.profiles.active=prod  
+
+To run app from Eclipse IDE just add VM arguments toEclipse project: 
+for "default":
+  -Dspring.profiles.active=local 
+for "prod":
+  -Dspring.profiles.active=prod
+for "dev":
+  -Dspring.profiles.active=dev 
+   
+Ref.
+http://websystique.com/spring-boot/spring-boot-angularjs-spring-data-jpa-crud-app-example/
+https://www.callicoder.com/spring-boot-file-upload-download-jpa-hibernate-mysql-database-example/
+https://www.callicoder.com/spring-boot-spring-security-jwt-mysql-react-app-part-2/
+https://jasonwatmore.com/post/2016/04/05/angularjs-jwt-authentication-example-tutorial#login-index-view
