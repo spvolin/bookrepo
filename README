@@ -18,12 +18,17 @@ spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQL94Dial
 4. Add this to treat lobs properly in Postgresql
 spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
 
-5. Initially put "create-drop":
+5. Before 1st run put:
 spring.jpa.hibernate.ddl-auto = create-drop
-1st run app create scheme in DB
-Before 2nd run switch this property to "update"!!!!:
+App will create scheme in DB
+
+6. Run app.
+
+7. Execute ./src/main/resources/data.sql
+
+8. After 1st run change property value to "update": 
 spring.jpa.hibernate.ddl-auto = update
-Don't forget otherwise you will loss all your data in db.
+otherwise you will loss all your data in db.
 
 Application
 =========== 
