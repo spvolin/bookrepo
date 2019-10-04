@@ -41,7 +41,7 @@ Build package:
 Run app: 
 > java -jar target\bookrepo-1.3.0.jar   
 
-3. Go to browser at http://localhost:8080/
+3. Go to browser at http://localhost:8082/
 4. Signup
 5. Signin
 6. Do some CRUD ops with books:
@@ -52,7 +52,7 @@ Run app:
 - download file of a book
 That's all folk!)
 
-7. To look at REST controller spec open browser at http://localhost:8080/swagger-ui.html
+7. To look at REST controller spec open browser at http://localhost:8082/swagger-ui.html
 
 Ref.
 http://websystique.com/spring-boot/spring-boot-angularjs-spring-data-jpa-crud-app-example/
