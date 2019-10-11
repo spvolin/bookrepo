@@ -20,7 +20,7 @@ public class AppController {
 		return "index";
 	}
 	
-	@RequestMapping("/partials/v2/{page}")
+	@RequestMapping("/partials/{page}")
 	String partialHandler(@PathVariable("page") final String page) {
 		return page;
 	}

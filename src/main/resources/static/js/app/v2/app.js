@@ -61,25 +61,25 @@
 	$urlRouterProvider.otherwise("/");
 
 	$routeProvider.when('/', {
-	    templateUrl : 'partials/v2/login',
+	    templateUrl : 'partials/login',
 	    controller : 'Login.IndexController',
 	    controllerAs : 'authCtrl'
 	}).when('/login', {
-	    templateUrl : 'partials/v2/login',
+	    templateUrl : 'partials/login',
 	    controller : 'Login.IndexController',
 	    controllerAs : 'authCtrl'
 	}).when('/signin', {
-	    templateUrl : 'partials/v2/login',
+	    templateUrl : 'partials/login',
 	    controller : 'Login.IndexController',
 	    controllerAs : 'authCtrl'
 	}).when('/signup', {
-	    templateUrl : 'partials/v2/login',
+	    templateUrl : 'partials/login',
 	    controller : 'Login.IndexController',
 	    controllerAs : 'authCtrl'
 	}).when(
 		'/book',
 		{
-		    templateUrl : 'partials/v2/book',
+		    templateUrl : 'partials/book',
 		    controller : 'BookController',
 		    controllerAs : 'ctrlBook',
 		    resolve : {
@@ -97,19 +97,19 @@
 	// app routes
 	$stateProvider.state('home', {
 	    url : '/',
-	    templateUrl : 'partials/v2/login',
+	    templateUrl : 'partials/login',
 	    controller : 'Home.IndexController',
 	    controllerAs : 'vm'
 	}).state('login', {
 	    url : '/login',
-	    templateUrl : 'partials/v2/login',
+	    templateUrl : 'partials/login',
 	    controller : 'Login.IndexController',
 	    controllerAs : 'vm'
 	}).state(
 		'book',
 		{
 		    url : '/book',
-		    templateUrl : 'partials/v2/book',
+		    templateUrl : 'partials/book',
 		    controller : 'BookController',
 		    controllerAs : 'bookCtrl',
 		    resolve : {
