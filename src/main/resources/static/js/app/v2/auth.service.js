@@ -19,18 +19,18 @@
             delete $localStorage.currentUser;
             //delete $localStorage.headersConfig;
             $http.defaults.headers.common.Authorization = '';
-            console.log('Logged out!');
+            //console.log('Logged out!');
         }
 
         function login(loginRequest, callback) {
 
             var signinUrl = urls.AUTH_SERVICE_API + 'signin';
 
-            console.log('Authenticating user...');
-            console.log('loginRequest: ' + loginRequest);
-            console.log('loginRequest.usernameOrEmail: ' + loginRequest.usernameOrEmail);
-            console.log('loginRequest.password: ' + loginRequest.password);
-            console.log('signinUrl: ' + signinUrl);
+//            console.log('Authenticating user...');
+//            console.log('loginRequest: ' + loginRequest);
+//            console.log('loginRequest.usernameOrEmail: ' + loginRequest.usernameOrEmail);
+//            console.log('loginRequest.password: ' + loginRequest.password);
+//            console.log('signinUrl: ' + signinUrl);
 
             $http.post(signinUrl, loginRequest)
                 .success(function (response) {
@@ -38,10 +38,11 @@
                     // login successful if there's a token in the response
                     if (response.accessToken) {
 
-                        console.log('accessToken: ' + response.accessToken);
+                        //console.log('accessToken: ' + response.accessToken);
                         // store username and token in local storage to keep user logged in between page refreshes
                         $localStorage.currentUser = { username: loginRequest.usernameOrEmail, token: response.accessToken };
-                        console.log('$localStorage.currentUser: ' + $localStorage.currentUser.username);
+                        //console.log('$localStorage.currentUser: ' + $localStorage.currentUser.username);
+                        
                         // add jwt token to auth header for all requests made by the $http service
                         $http.defaults.headers.common.Authorization = 'Bearer ' + response.accessToken;
 
@@ -59,10 +60,10 @@
             var deferred = $q.defer();
             var signupUrl = urls.AUTH_SERVICE_API + 'signup';
 
-            console.log('Authenticating user...');
-            console.log('signupRequest.username: ' + signupRequest.username);
-            console.log('signupRequest.password: ' + signupRequest.password);
-            console.log('signupUrl: ' + signupUrl);
+//            console.log('Authenticating user...');
+//            console.log('signupRequest.username: ' + signupRequest.username);
+//            console.log('signupRequest.password: ' + signupRequest.password);
+//            console.log('signupUrl: ' + signupUrl);
 
             $http.post(signupUrl, signupRequest)
                 .then(

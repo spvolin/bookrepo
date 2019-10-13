@@ -19,7 +19,8 @@ public interface BookService {
 	void updateBook(Book Book);
 	void deleteBookById(Long id);
 	void deleteAllBooks();
-	boolean isBookExist(Book book);
+	boolean isBookExistWithThisIsbn(Book book);
+	boolean isBookExistWithThisId(Book book);
 	List<Book> findAllBooks();
 	List<Book> findAllBooksByUser();
 	List<Book> findBooksByTitle(String searchedTitle);

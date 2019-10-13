@@ -84,8 +84,9 @@ public class BookServiceImpl implements BookService {
 	 * @param id the id
 	 */
 	@Transactional(readOnly = false)
-	public void deleteBookById(Long id) {
-		bookRepository.deleteById(id);
+	public void deleteBookById(Long bookId) {
+		fileRepository.deleteByBookId(bookId);
+		bookRepository.deleteById(bookId);
 	}
 
 	/**
@@ -136,9 +137,14 @@ public class BookServiceImpl implements BookService {
 	 * @param book the book
 	 * @return true, if is book exist
 	 */
-	public boolean isBookExist(Book book) {
+	public boolean isBookExistWithThisIsbn(Book book) {
 		return findByIsbn(book.getIsbn()) != null;
 	}
+
+	public boolean isBookExistWithThisId(Book book) {
+		return findById(book.getId()) != null;
+	}
+
 
 	@Override
 	public List<Book> findAllBooksByUser() {

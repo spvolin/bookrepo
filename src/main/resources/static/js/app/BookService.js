@@ -1,16 +1,20 @@
 'use strict';
 
 angular.module('bookApp').factory('BookService',
-    ['$localStorage', '$http', '$q', 'urls',
-        function ($localStorage, $http, $q, urls) {
+    ['$localStorage', '$http', '$q', 'urls', '$compile', '$rootScope',
+        function ($localStorage, $http, $q, urls, $compile, $rootScope) {
 
             var factory = {
-                loadAllBooks: loadAllBooks,
+            		testAlert: testAlert,
+            		myLog: myLog,
+            		loadAllBooks: loadAllBooks,
                 getAllBooks: getAllBooks,
                 getBook: getBook,
                 createBook: createBook,
                 updateBook: updateBook,
+  							updateBookAndFiles: updateBookAndFiles,
                 removeBook: removeBook,
+                removeFile: removeFile,
                 searchBooksByTitle: searchBooksByTitle,
                 searchBooksByAuthor: searchBooksByAuthor,
                 searchBooksByIsbn: searchBooksByIsbn,
@@ -20,11 +24,35 @@ angular.module('bookApp').factory('BookService',
 
             return factory;
 
+            function testAlert(menu) {
+            	alert('test ' + menu.url)
+            }
+            function myLog(text) {
+            	console.log(text);
+            }
+            
+            function removeBook(id) {
+              console.log('Removing Book with id ' + id);
+              var deferred = $q.defer();
+              $http.delete(urls.BOOK_SERVICE_API + id)
+                  .then(
+                      function (response) {
+                          loadAllBooks();
+                          deferred.resolve(response.data);
+                      },
+                      function (errResponse) {
+                          console.error('Error while removing Book with id :' + id);
+                          deferred.reject(errResponse);
+                      }
+                  );
+              return deferred.promise;
+            }
+            
             function searchBooksByTitle(searchedTitle) {
 
                 console.log('Searching books starting with: ' + searchedTitle);
                 var deferred = $q.defer();
-                console.log('url = ' + urls.BOOK_SERVICE_API + "title/" + searchedTitle);
+                // console.log('url = ' + urls.BOOK_SERVICE_API + "title/" + searchedTitle);
 
                 $http.get(urls.BOOK_SERVICE_API + "title/" + searchedTitle)
                     .then(
@@ -45,7 +73,7 @@ angular.module('bookApp').factory('BookService',
 
                 console.log('Searching books with author: ' + searchedAuthor);
                 var deferred = $q.defer();
-                console.log('url = ' + urls.BOOK_SERVICE_API + "author/" + searchedAuthor);
+                // console.log('url = ' + urls.BOOK_SERVICE_API + "author/" + searchedAuthor);
 
                 $http.get(urls.BOOK_SERVICE_API + "author/" + searchedAuthor)
                     .then(
@@ -66,7 +94,7 @@ angular.module('bookApp').factory('BookService',
 
                 console.log('Searching books by ISBN: ' + searchedIsbn);
                 var deferred = $q.defer();
-                console.log('url = ' + urls.BOOK_SERVICE_API + "isbn/" + searchedIsbn);
+                //console.log('url = ' + urls.BOOK_SERVICE_API + "isbn/" + searchedIsbn);
 
                 $http.get(urls.BOOK_SERVICE_API + "isbn/" + searchedIsbn)
                     .then(
@@ -95,9 +123,9 @@ angular.module('bookApp').factory('BookService',
                 $http.get(urls.BOOK_SERVICE_API)
                     .then(
                         function (response) {
-                            console.log('Fetched successfully all books');
+                            //console.log('Fetched successfully all books');
                             $localStorage.books = response.data;
-                            console.log('Totally fetched books#: ' + $localStorage.books.length);
+                            //console.log('Totally fetched books#: ' + $localStorage.books.length);
                             deferred.resolve(response);
                         },
                         function (errResponse) {
@@ -109,15 +137,15 @@ angular.module('bookApp').factory('BookService',
             }
 
             function getAllBooks() {
-                console.log('Totally fetched books#: ' + $localStorage.books.length);
+                //console.log('Totally fetched books#: ' + $localStorage.books.length);
                 return $localStorage.books;
             }
 
-            function getBook(id) {
-                console.log('Fetching Book with id :' + id);
+            function getBook(bookId) {
+                console.log('Fetching Book with id :' + bookId);
                 var deferred = $q.defer();
-                var url = urls.BOOK_SERVICE_API + id + '/files';
-                console.log('url = ' + url);
+                var url = urls.BOOK_SERVICE_API + bookId + '/files';
+                //console.log('url = ' + url);
                 // <from file-demo main.js>
                 var multipleFileUploadError = document.querySelector('#multipleFileUploadError');
                 var multipleFileUploadSuccess = document.querySelector('#multipleFileUploadSuccess');
@@ -127,26 +155,61 @@ angular.module('bookApp').factory('BookService',
                 $http.get(url)
                     .then(
                         function (response) {
-                            console.log('Fetched successfully Book with id :' + id);
+                            console.log('Fetched successfully Book with id :' + bookId);
 
                             // get book from response:
                             deferred.resolve(response.data.book);
-                            console.log('response.status :' + response.status);
-                            console.log('response.data :' + response.data);
-                            console.log('response.data.book :' + response.data.book.authorName);
-                            console.log('response.data.fileResponse :' + response.data.fileResponse);
-                            console.log('response.data.fileResponse.length :' + response.data.fileResponse.length);
+//                            console.log('response.status :' + response.status);
+//                            console.log('response.data :' + response.data);
+//                            console.log('response.data.book :' + response.data.book.authorName);
+//                            console.log('response.data.fileResponse :' + response.data.fileResponse);
+//                            console.log('response.data.fileResponse.length :' + response.data.fileResponse.length);
 
                             // <from file-demo main.js>
                             if (response.data.fileResponse.length > 0) {
                                 multipleFileUploadError.style.display = "none";
                                 var content = "<p>List of book files:</p>";
+                                var fileId = "";
+                                var fileDownloadUri = "";
                                 for (var i = 0; i < response.data.fileResponse.length; i++) {
-                                    content += "<p>DownloadUrl : <a href='" + response.data.fileResponse[i].fileDownloadUri + "' target='_blank'>" + response.data.fileResponse[i].fileDownloadUri + "</a></p>";
+                                    fileId = response.data.fileResponse[i].id;
+                                    fileDownloadUri = response.data.fileResponse[i].fileDownloadUri;
+                                    
+                                    //content += "<p>DownloadUrl : <a href='" + response.data.fileResponse[i].fileDownloadUri + "' target='_blank'>" + response.data.fileResponse[i].fileDownloadUri + "</a></p>";
+                                    //content += "<p>DownloadUrl : <a href='" + response.data.fileResponse[i].fileDownloadUri + "' target='_blank'>" + response.data.fileResponse[i].fileDownloadUri + "</a>" + 
+                                    //"<button type='button' ng-click='ctrlBook.editBook(b.id)' class='btn btn-danger custom-width'>Delete</button>" + "</p>";                                    
+
+                                    //content += "<div class='row'><div class='form-group col-md-8'>DownloadUrl : <a href='" + fileDownloadUri + "' target='_blank'>" + fileDownloadUri + "</a></div>" + 
+                                    //"<div class='form-group col-md-4'><button type='button' ng-click='ctrlBook.removeFile(" + bookId + "," + fileId + ")' class='btn btn-danger custom-width'>Delete</button>" + "</div></div>";
+
+                                    content += "<div class='row'>"; 
+                                    content += "<div class='form-group col-md-8'>DownloadUrl : <a href='" + fileDownloadUri + "' target='_blank'>" + fileDownloadUri + "</a></div>"; 
+                                    //content += `<div class='form-group col-md-4'><button type="button" ng-click="ctrlBook.removeFile('${bookId}', '${fileId}')" class="btn btn-danger custom-width">Delete</button></div>`;
+                                    //content += `<div class='form-group col-md-4'><button type="button" ng-click="ctrlBook.removeFile()" class="btn btn-danger custom-width">Delete</button></div>`;
+                                    //content += `<div class='form-group col-md-4'><button type="button" onclick="alert('Клик!')" class="btn btn-danger custom-width">Delete</button></div>`;
+                                    
+                                    // <OK>
+                                    //content += `<div ng-controller='BookController as ctrlBook' class='form-group col-md-4'><button type="button" ng-click="ctrlBook.mylog('Клик!))')" class="btn btn-danger custom-width">Delete</button></div>`;
+                                    //content += `<div ng-controller='BookController as bc'><a ng-click="bc.mylog('Клик!!')">Delete</a></div>`;
+                                    content += `<div ng-controller='BookController as bc' class='form-group col-md-4'><button type="button" ng-click="bc.removeFile('${bookId}', '${fileId}')" class="btn btn-danger custom-width">Delete</button></div>`;
+                                    // </OK>
+                                    
+                                    // next line good
+                                    //content += "<div class='form-group col-md-4'><a href='" + urls.BOOK_SERVICE_API + bookId + "/files/" + fileId + "' target='_self'>Delete</a></div>"; 
+                                    content += "</div>"; 
+                                    
+                                    //content += "<div><a ng-click='ctrlBook.removeFile(" + bookId + "," + fileId + ")'>Delete</a></div>";
+                                    
                                 }
+                                //content = "</div>";
                                 multipleFileUploadSuccess.innerHTML = content;
+                                $compile(multipleFileUploadSuccess)($rootScope);
+                                //$rootScope.$apply();
                                 multipleFileUploadSuccess.style.display = "block";
+                            } else {
+                              multipleFileUploadSuccess.innerHTML = "";                            	
                             }
+                            
                             // </from file-demo main.js>
                         },
                         function (errResponse) {
@@ -165,6 +228,7 @@ angular.module('bookApp').factory('BookService',
 
             function getJsonModel(book) {
                 var bookModel = {
+                		id: book.id,
                     authorName: book.authorName,
                     bookTitle: book.bookTitle,
                     isbn: book.isbn
@@ -175,10 +239,10 @@ angular.module('bookApp').factory('BookService',
             function createBook(book) {
                 console.log('Creating Book');
                 var deferred = $q.defer();
-                var url = urls.BOOK_SERVICE_API + 'upload';
+                var url = urls.BOOK_SERVICE_API + 'files';
                 console.log('bookModel = ' + angular.toJson(bookModel));
-                console.log('$localStorage.files#: ' + $localStorage.files.length);
-                console.log('url = ' + url);
+//                console.log('$localStorage.files#: ' + $localStorage.files.length);
+//                console.log('url = ' + url);
                 // http.post FormData comprised of:
                 // - bookModel - json object (a string version)
                 // - book.files - multipart files
@@ -187,6 +251,7 @@ angular.module('bookApp').factory('BookService',
                 var bookModel = getJsonModel(book);
                 var formData = new FormData();
                 formData.append("model", angular.toJson(bookModel));
+								console.log('???$localStorage.files#: ' + $localStorage.files.length);
                 if ($localStorage.files.length > 0) {
                     for (var i = 0; i < $localStorage.files.length; i++) {
                         formData.append('file' + i, $localStorage.files[i]);
@@ -200,7 +265,6 @@ angular.module('bookApp').factory('BookService',
                 })
                     .then(
                         function (response) {
-                            console.log('in response');
                             loadAllBooks();
                             deferred.resolve(response.data);
                         },
@@ -229,23 +293,65 @@ angular.module('bookApp').factory('BookService',
                 return deferred.promise;
             }
 
-            function removeBook(id) {
-                console.log('Removing Book with id ' + id);
+            function updateBookAndFiles(book, id) {
+              console.log('Updating Book with id ' + id);
+              var deferred = $q.defer();
+              var url = urls.BOOK_SERVICE_API +  + id +'/files';
+
+              // Fill FormData with bookModel and files
+              var bookModel = getJsonModel(book);
+              var formData = new FormData();
+              formData.append("model", angular.toJson(bookModel));
+              console.log('bookModel = ' + angular.toJson(bookModel));
+							console.log('???$localStorage.files#: ' + $localStorage.files.length);
+              if ($localStorage.files.length > 0) {
+                  for (var i = 0; i < $localStorage.files.length; i++) {
+                      formData.append('file' + i, $localStorage.files[i]);
+                      console.log('file_' + i);
+                  }
+              }
+
+              $http.put(url, formData, {
+                  headers: { 'Content-Type': undefined },
+                  transformRequest: angular.identity
+              })
+                  .then(
+                      function (response) {
+												// after update:
+                      	// clean input file element of myForm:
+                      	var fileUpload = angular.element(document.getElementById("file_upload"));
+      									angular.element(fileUpload).val(null);                      	
+
+                          loadAllBooks();	// refresh list
+                          getBook(id);		// refresh book form
+                          deferred.resolve(response.data);
+                      },
+                      function (errResponse) {
+                          console.error('Error while updating Book with files: ' + errResponse.data.errorMessage);
+                          deferred.reject(errResponse);
+                      }
+                  );
+              return deferred.promise;
+            }
+            
+            function removeFile(bookId, fileId) {
+                console.log('Removing File with id: ' + fileId);
                 var deferred = $q.defer();
-                $http.delete(urls.BOOK_SERVICE_API + id)
+                //$http.delete(urls.FILE_SERVICE_API + fileId)
+                $http.delete(urls.BOOK_SERVICE_API + bookId + "/files/" + fileId)
                     .then(
                         function (response) {
-                            loadAllBooks();
+                            getBook(bookId);
                             deferred.resolve(response.data);
                         },
                         function (errResponse) {
-                            console.error('Error while removing Book with id :' + id);
+                            console.error('Error while removing File with id :' + fileId);
                             deferred.reject(errResponse);
                         }
                     );
                 return deferred.promise;
             }
-
+            
             // <from file-demo main.js>
             multipleUploadForm.addEventListener('submit', function (event) {
                 var files = multipleFileUploadInput.files;

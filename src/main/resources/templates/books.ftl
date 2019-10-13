@@ -3,6 +3,17 @@
 
 <!--    ----------------------------------    BookRepo3: Books    ----------------------------------   -->
 
+<div ng-controller="BookController as bc">
+    
+    <ul>
+        <li ng-repeat="menu in menus" >
+            <a ng-click="bc.test(menu)">click me</a>
+        </li>
+    </ul>
+	<a ng-click="bc.mylog('Клик!')">click me</a>
+        
+</div>
+
 <div class="generic-container">
 	<div class="panel panel-default">
 		<!-- Default panel contents -->
@@ -44,11 +55,11 @@
 
 					<div class="row">
 						<div class="form-group col-md-12">
-							<label class="col-md-2 control-lable" for="isbn">Files:</label>
+							<label class="col-md-2 control-lable" for="files">Files:</label>
 							<div class="col-md-7">
-								<input type="file" ng-model="ctrlBook.book.files" id="files" upload-files multiple />
+								<input type="file" name="file" ng-model="ctrlBook.book.files" id="file_upload" class="form-control" onchange="angular.element(this).scope().filesSelected(this)" upload-files multiple/>
 								<ul>
-									<li ng-repeat="file in files">{{file.name}}</li>
+									<li id="file-li" ng-repeat="file in files">{{file.name}}</li>
 								</ul>
 							</div>
 						</div>
@@ -56,16 +67,16 @@
 
 					<div class="row">
 						<div class="form-actions floatRight">
-							<input type="submit" value="{{!ctrlBook.book.id ? 'Add' : 'Update'}}" class="btn btn-primary btn-sm" ng-disabled="myForm.$invalid || myForm.$pristine">
+							<input type="submit" value="{{!ctrlBook.book.id ? 'Add' : 'Update'}}" class="btn btn-primary btn-sm" ng-disabled="myForm.$invalid || (myForm.$pristine && !inputContainsFile)  ">
 							<button type="button" ng-click="ctrlBook.reset()" class="btn btn-warning btn-sm" ng-disabled="myForm.$pristine">Reset Form</button>
 						</div>
 					</div>
 				</form>
 			</div>
-                    <div class="upload-response">
-                        <div id="multipleFileUploadError"></div>
-                        <div id="multipleFileUploadSuccess"></div>
-                    </div>			
+            <div class="upload-response">
+           		<div id="multipleFileUploadError"></div>
+               	<div id="multipleFileUploadSuccess"></div>
+			</div>			
 		</div>
 	</div>
 	<div class="panel panel-default">

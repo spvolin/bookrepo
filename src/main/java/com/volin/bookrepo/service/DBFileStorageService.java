@@ -55,7 +55,7 @@ public class DBFileStorageService {
 	 * @return экземпляр DBFile, если он найден, иначе null
 	 */
 	@Transactional
-	public Optional<DBFile> getFileByUuid(String id) {
+	public Optional<DBFile> getFileById(String id) {
 		return dbFileRepository.findByUuid(id);
 	}
 	
@@ -94,6 +94,16 @@ public class DBFileStorageService {
 	@Transactional
 	public void deleteFile(String fileName) {
 		dbFileRepository.removeAllByFileName(fileName);
+	}
+	
+	/**
+	 * Метод удаляет файл из БД по id
+	 *
+	 * @param id - uuid файла
+	 */
+	@Transactional
+	public void deleteFileById(String id) {
+		dbFileRepository.deleteById(id);
 	}
 
 }

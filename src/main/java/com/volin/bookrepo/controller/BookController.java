@@ -53,7 +53,7 @@ import io.swagger.annotations.ApiOperation;
  */
 @RestController
 @Api()
-@RequestMapping("/api")
+@RequestMapping("/api/books")
 public class BookController {
 
 	/** The Constant logger. */
@@ -64,126 +64,23 @@ public class BookController {
 	@Autowired
 	BookService bookService; 
 
-	// -------------------Retrieve All Books---------------------------------------------
-
-	/**
-	 * Получить список книг.
-	 *
-	 * @return ResponseEntity со списком книг
-	 */
-	@ApiOperation(value = "Получить список книг", response = Iterable.class, tags = "listAllBooks")
-	@RequestMapping(value = "/book/", method = RequestMethod.GET)
-	public ResponseEntity<List<Book>> listAllBooks() {
-
-		List<Book> books = bookService.findAllBooksByUser();
-		if (books.isEmpty()) {
-			return new ResponseEntity<List<Book>>(HttpStatus.NO_CONTENT);
-		}
-		return new ResponseEntity<List<Book>>(books, HttpStatus.OK);
-	}
-
-	// ------------------- Get Books By Title---------------------------------------------
-
-	@RequestMapping(value = "/book/title/{searchedTitle}", method = RequestMethod.GET)
-	public ResponseEntity<List<Book>> listBooksByTitle(@PathVariable("searchedTitle") String searchedTitle) {
-		
-		List<Book> books = bookService.findBooksByTitle(searchedTitle);
-		System.out.println("listBooksByTitle #: " + books.size());
-		
-		if (books.isEmpty()) {
-			return new ResponseEntity<List<Book>>(HttpStatus.NO_CONTENT);
-		}
-		return new ResponseEntity<List<Book>>(books, HttpStatus.OK);
-	}
-
-	// ------------------- Get Books By Author---------------------------------------------
-
-	@RequestMapping(value = "/book/author/{searchedAuthor}", method = RequestMethod.GET)
-	public ResponseEntity<List<Book>> listBooksByAuthor(@PathVariable("searchedAuthor") String searchedAuthor) {
-		
-		List<Book> books = bookService.findBooksByAuthor(searchedAuthor);
-		System.out.println("listBooksByAuthor #: " + books.size());
-		
-		if (books.isEmpty()) {
-			return new ResponseEntity<List<Book>>(HttpStatus.NO_CONTENT);
-		}
-		return new ResponseEntity<List<Book>>(books, HttpStatus.OK);
-	}
-	
-	// ------------------- Get Books By Isbn---------------------------------------------
-
-	@RequestMapping(value = "/book/isbn/{searchedIsbn}", method = RequestMethod.GET)
-	public ResponseEntity<List<Book>> listBooksByIsbn(@PathVariable("searchedIsbn") String searchedIsbn) {
-		
-		List<Book> books = bookService.findBooksByIsbn(searchedIsbn);
-		System.out.println("listBooksByIsbn #: " + books.size());
-		
-		if (books.isEmpty()) {
-			return new ResponseEntity<List<Book>>(HttpStatus.NO_CONTENT);
-		}
-		return new ResponseEntity<List<Book>>(books, HttpStatus.OK);
-	}
-			
-	/**
-	 * Получить конкретную книгу по ее id.
-	 *
-	 * @param id 
-	 * @return экземпляр книги
-	 */
-	// -------------------Retrieve Single Book------------------------------------------
-    @ApiOperation(value = "Получить конкретную книгу ", response = Book.class, tags = "getBook")
-	@RequestMapping(value = "/book/{id}", method = RequestMethod.GET)
-	public ResponseEntity<?> getBook(@PathVariable("id") long id) {
-
-    	logger.info("Fetching Book with id {}", id);
-		Optional<Book> book = bookService.findById(id);
-		if (book == null) {
-			logger.error("Book with id {} not found.", id);
-			return new ResponseEntity<CustomErrorType>(new CustomErrorType("Book with id " + id 
-					+ " not found"), HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<Optional<Book>>(book, HttpStatus.OK);
-	}
-
-
-	/**
-	 * Получить книгу с заданным isbn.
-	 *
-	 * @param isbn 
-	 * @return экземпляр книги
-	 */
-	// -------------------Retrieve Single Book------------------------------------------
-    @ApiOperation(value = "Получить книгу с заданным isbn", response = Book.class, tags = "getBookByIsbn")
-    @GetMapping("/book/search/")
-	public ResponseEntity<?> getBookByIsbn(@RequestParam("isbn") String isbn) {
-
-    	logger.info("Fetching Book with isbn {}", isbn);
-		Book book = bookService.findByIsbn(isbn);
-		
-		if (book == null) {
-			logger.error("Book with isbn {} not found.", isbn);
-			return new ResponseEntity<CustomErrorType>(new CustomErrorType("Book with isbn " + isbn 
-					+ " not found"), HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<>(book, HttpStatus.OK);
-	}
 	// -------------------Create a Book-------------------------------------------
 
     /**
-	 * Метод сохраняет новую книгу.
+	 * Метод сохраняет новую книгу (без файлов).
 	 *
 	 * @param book - книга
 	 * @param ucBuilder - URI-билдер
 	 * @return the response entity
 	 */
 	@ApiOperation(value = "Сохранить новую книгу ", response = Book.class, tags = "createBook")
-    @RequestMapping(value = "/book/", method = RequestMethod.POST, consumes = "application/json;charset=UTF-8")
+    @RequestMapping(value = "/", method = RequestMethod.POST, consumes = "application/json;charset=UTF-8")
     //return 201 instead of 200
     @ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<?> createBook(@RequestBody Book book, UriComponentsBuilder ucBuilder) {
 		logger.info("Creating Book : {}", book);
 
-		if (bookService.isBookExist(book)) {
+		if (bookService.isBookExistWithThisIsbn(book)) {
 			logger.error("Unable to create. A Book with ISBN {} already exist", book.getIsbn());
 			return new ResponseEntity<CustomErrorType>(new CustomErrorType("Unable to create. A Book with name " + 
 			book.getIsbn() + " already exist."),HttpStatus.CONFLICT);
@@ -192,24 +89,8 @@ public class BookController {
 		bookService.saveBook(book);
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(ucBuilder.path("/api/book/{id}").buildAndExpand(book.getId()).toUri());
+		headers.setLocation(ucBuilder.path("/api/books/{id}").buildAndExpand(book.getId()).toUri());
 		return new ResponseEntity<String>(headers, HttpStatus.CREATED);
-	}
-
-	/**
-	 * Метод парсит JSON-объект модели данных книги запроса
-	 * @param bookModel - объект модели данных книги
-	 * @return book - экземпляр класса Book
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws IOException
-	 */
-	private Book getBookFromJson (String bookModel) throws JsonParseException, JsonMappingException, IOException {
-
-		// Parse JSON to Book
-	    final ObjectMapper mapper = new ObjectMapper();
-	    Book book = mapper.readValue(bookModel, Book.class);
-		return book;
 	}
 	
 	/**
@@ -223,8 +104,8 @@ public class BookController {
 	 * 
 	 * Ref: https://stackoverflow.com/questions/33920248/angularjs-formdata-file-array-upload/33921749
 	 */
-	@RequestMapping(value = "/book/upload", method = RequestMethod.POST)
-	public ResponseEntity<?> uploadFiles(MultipartHttpServletRequest request, HttpServletResponse response, UriComponentsBuilder ucBuilder) throws IOException {
+	@RequestMapping(value = "/files", method = RequestMethod.POST)
+	public ResponseEntity<?> createBookAndFiles(MultipartHttpServletRequest request, HttpServletResponse response, UriComponentsBuilder ucBuilder) throws IOException {
 		
 		// Parse JSON to Book
 	    final String bookModel = request.getParameter("model");
@@ -233,7 +114,7 @@ public class BookController {
 		logger.info("Creating Book: ", ""+book);
 
 		// Check if book exists:
-		if (bookService.isBookExist(book)) {
+		if (bookService.isBookExistWithThisIsbn(book)) {
 			logger.error("Unable to create. A Book with ISBN {} already exist", book.getIsbn());
 			return new ResponseEntity<CustomErrorType>(new CustomErrorType("Unable to create. A Book with name " + 
 			book.getIsbn() + " already exist."),HttpStatus.CONFLICT);
@@ -261,19 +142,160 @@ public class BookController {
 		Book returnedBook = bookService.saveBookForm(fdl);
 
 	    HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(ucBuilder.path("/api/book/{id}").buildAndExpand(returnedBook).toUri());
+		headers.setLocation(ucBuilder.path("/api/books/{id}").buildAndExpand(returnedBook).toUri());
 		return new ResponseEntity<String>(headers, HttpStatus.CREATED);	    
 	}
-	
-    @GetMapping(value = "/book/{id}/files")
-    public ResponseEntity<?> getBookAndFiles(@PathVariable("id") long book_id){
+
+	// ------------------- Delete a Book (no files) -----------------------------------------
+
+    /**
+	 * Метод удаляет книгу. Пока без файлов.
+	 *
+	 * @param id the id
+	 * @return the response entity
+	 */
+	@ApiOperation(value = "Удалить книгу ", response = Book.class, tags = "deleteBook")
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteBook(@PathVariable("id") long id) {
+		logger.info("Fetching & Deleting Book with id {}", id);
+
+		Optional<Book> book = bookService.findById(id);
+		if (book == null) {
+			logger.error("Unable to delete. Book with id {} not found.", id);
+			return new ResponseEntity<CustomErrorType>(new CustomErrorType("Unable to delete. Book with id " + id + " not found."),
+					HttpStatus.NOT_FOUND);
+		}
+		bookService.deleteBookById(id);
+		book = bookService.findById(id);
+		System.out.println(""+book);
+		return new ResponseEntity<Book>(HttpStatus.NO_CONTENT);
+	}
+
+	// ------------------- Delete a File of a Book -----------------------------------------
+    /**
+	 * Метод удаляет файл.
+	 *
+	 * @param id - UUID файла
+	 * @return the response entity
+	 */
+	@ApiOperation(value = "Удалить файл книги ", response = DBFile.class, tags = "deleteFile")
+	@RequestMapping(value = "/{book_id}/files/{file_id}", method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteFile(
+			@PathVariable("book_id") Long book_id, 
+			@PathVariable("file_id") String file_id, 
+			UriComponentsBuilder ucBuilder) {
+		
+		logger.info("Fetching & Deleting File with file_id {} of Book {}", file_id, book_id);
+		
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentPrincipalName = authentication.getName();
+        System.out.println("currentPrincipalName = "+ currentPrincipalName);
+
+		// Part 1
+		Optional<DBFile> f = fileStorageService.getFileById(file_id);
+		if (f == null) {
+			logger.error("Unable to delete. File with file_id {} not found.", file_id);
+			return new ResponseEntity<CustomErrorType>(new CustomErrorType(
+					"Unable to delete. File with file_id " + file_id + " not found."),
+					HttpStatus.NOT_FOUND);
+		}
+		
+		fileStorageService.deleteFileById(file_id);
+		//return getBookAndFiles(book_id);
+//		HttpHeaders headers = new HttpHeaders();
+//	    URI uri = ucBuilder.path("/api/books/{id}/files/").buildAndExpand(book_id).toUri();
+//	    System.out.println("uri = "+ uri);
+//		headers.setLocation(uri);
+//		return new ResponseEntity<String>(headers, HttpStatus.FOUND);
+		           
+		// Part 2
+        List<DBFile> dbFiles = fileStorageService.getAllByBook(book_id, currentPrincipalName);
+        int size = dbFiles == null ? 0 : dbFiles.size(); 
+        System.out.println("dbFiles.# = "+ size);
+        List<FileResponse> files = dbFiles.stream().map(file -> 
+        	new FileResponse(file.getId(), file.getFileName(), ServletUriComponentsBuilder.fromCurrentContextPath()
+        			.path("/api/files/downloadFile/id/").path(file.getId()).toUriString(),
+        			file.getFileType(), file.getFileSize())).collect(Collectors.toList());
+        
+        Optional<Book> book = bookService.findById(book_id);
+        BookFileResponse resp = new BookFileResponse(book, files);
+        return new ResponseEntity<BookFileResponse>(resp, HttpStatus.OK);		
+	}
+	
+	// ------------------- Delete All Books (no files) -----------------------------
+
+    /**
+	 * Метод удаляет все книги. Пока без файлов.
+	 *
+	 * @return the response entity
+	 */
+	@ApiOperation(value = "Удалить все книги ", response = Book.class, tags = "deleteAllBooks")
+	@RequestMapping(value = "/", method = RequestMethod.DELETE)
+	public ResponseEntity<Book> deleteAllBooks() {
+		logger.info("Deleting All Books");
+
+		bookService.deleteAllBooks();
+		return new ResponseEntity<Book>(HttpStatus.NO_CONTENT);
+	}
+	
+	/**
+	 * Получить конкретную книгу по ее id.
+	 *
+	 * @param id 
+	 * @return экземпляр книги
+	 */
+	// -------------------Retrieve Single Book------------------------------------------
+    @ApiOperation(value = "Получить конкретную книгу ", response = Book.class, tags = "getBook")
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+	public ResponseEntity<?> getBook(@PathVariable("id") long id) {
+
+    	logger.info("Fetching Book with id {}", id);
+		Optional<Book> book = bookService.findById(id);
+		if (book == null) {
+			logger.error("Book with id {} not found.", id);
+			return new ResponseEntity<CustomErrorType>(new CustomErrorType("Book with id " + id 
+					+ " not found"), HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<Optional<Book>>(book, HttpStatus.OK);
+	}
+
+
+	/**
+	 * Получить книгу с заданным isbn.
+	 *
+	 * @param isbn 
+	 * @return экземпляр книги
+	 */
+	// -------------------Retrieve Single Book------------------------------------------
+    @ApiOperation(value = "Получить книгу с заданным isbn", response = Book.class, tags = "getBookByIsbn")
+    @GetMapping("/search/")
+	public ResponseEntity<?> getBookByIsbn(@RequestParam("isbn") String isbn) {
+
+    	logger.info("Fetching Book with isbn {}", isbn);
+		Book book = bookService.findByIsbn(isbn);
+		
+		if (book == null) {
+			logger.error("Book with isbn {} not found.", isbn);
+			return new ResponseEntity<CustomErrorType>(new CustomErrorType("Book with isbn " + isbn 
+					+ " not found"), HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<>(book, HttpStatus.OK);
+	}
+
+    @GetMapping(value = "/{id}/files")
+    public ResponseEntity<?> getBookAndFiles(@PathVariable("id") long book_id){
+        
+		logger.info("Fetching Book with id {}", book_id);
+
+    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        System.out.println("currentPrincipalName = "+ currentPrincipalName);
+
             
         List<DBFile> dbFiles = fileStorageService.getAllByBook(book_id, currentPrincipalName);
         
         List<FileResponse> files = dbFiles.stream().map(file -> 
-        	new FileResponse(file.getFileName(), ServletUriComponentsBuilder.fromCurrentContextPath()
+        	new FileResponse(file.getId(), file.getFileName(), ServletUriComponentsBuilder.fromCurrentContextPath()
         			.path("/api/files/downloadFile/id/").path(file.getId()).toUriString(),
         			file.getFileType(), file.getFileSize())).collect(Collectors.toList());
         
@@ -282,7 +304,82 @@ public class BookController {
         return new ResponseEntity<BookFileResponse>(resp, HttpStatus.OK);
     }
     
+    /**
+	 * Метод парсит JSON-объект модели данных книги запроса
+	 * @param bookModel - объект модели данных книги
+	 * @return book - экземпляр класса Book
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
+	private Book getBookFromJson (String bookModel) throws JsonParseException, JsonMappingException, IOException {
 
+		// Parse JSON to Book
+	    final ObjectMapper mapper = new ObjectMapper();
+	    Book book = mapper.readValue(bookModel, Book.class);
+		return book;
+	}
+	
+	// -------------------Retrieve All Books---------------------------------------------
+
+	/**
+	 * Получить список книг.
+	 *
+	 * @return ResponseEntity со списком книг
+	 */
+	@ApiOperation(value = "Получить список книг", response = Iterable.class, tags = "listAllBooks")
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public ResponseEntity<List<Book>> listAllBooks() {
+
+		List<Book> books = bookService.findAllBooksByUser();
+		if (books.isEmpty()) {
+			return new ResponseEntity<List<Book>>(HttpStatus.NO_CONTENT);
+		}
+		return new ResponseEntity<List<Book>>(books, HttpStatus.OK);
+	}
+
+	// ------------------- Get Books By Title---------------------------------------------
+
+	@RequestMapping(value = "/title/{searchedTitle}", method = RequestMethod.GET)
+	public ResponseEntity<List<Book>> listBooksByTitle(@PathVariable("searchedTitle") String searchedTitle) {
+		
+		List<Book> books = bookService.findBooksByTitle(searchedTitle);
+		System.out.println("listBooksByTitle #: " + books.size());
+		
+		if (books.isEmpty()) {
+			return new ResponseEntity<List<Book>>(HttpStatus.NO_CONTENT);
+		}
+		return new ResponseEntity<List<Book>>(books, HttpStatus.OK);
+	}
+
+	// ------------------- Get Books By Author---------------------------------------------
+
+	@RequestMapping(value = "/author/{searchedAuthor}", method = RequestMethod.GET)
+	public ResponseEntity<List<Book>> listBooksByAuthor(@PathVariable("searchedAuthor") String searchedAuthor) {
+		
+		List<Book> books = bookService.findBooksByAuthor(searchedAuthor);
+		System.out.println("listBooksByAuthor #: " + books.size());
+		
+		if (books.isEmpty()) {
+			return new ResponseEntity<List<Book>>(HttpStatus.NO_CONTENT);
+		}
+		return new ResponseEntity<List<Book>>(books, HttpStatus.OK);
+	}
+	
+	// ------------------- Get Books By Isbn---------------------------------------------
+
+	@RequestMapping(value = "/isbn/{searchedIsbn}", method = RequestMethod.GET)
+	public ResponseEntity<List<Book>> listBooksByIsbn(@PathVariable("searchedIsbn") String searchedIsbn) {
+		
+		List<Book> books = bookService.findBooksByIsbn(searchedIsbn);
+		System.out.println("listBooksByIsbn #: " + books.size());
+		
+		if (books.isEmpty()) {
+			return new ResponseEntity<List<Book>>(HttpStatus.NO_CONTENT);
+		}
+		return new ResponseEntity<List<Book>>(books, HttpStatus.OK);
+	}
+			
 	/**
 	 * Метод сохраняет изменения в метаинформации книги.
 	 * (Пока не учитывает файлы. Пока. Предполагается к расширению)
@@ -293,7 +390,7 @@ public class BookController {
 	 */
 	// ------------------- Update a Book ------------------------------------------------
     @ApiOperation(value = "Обновить книгу ", response = Book.class, tags = "updateBook")
-	@RequestMapping(value = "/book/{id}", method = RequestMethod.PUT, consumes = MimeTypeUtils.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MimeTypeUtils.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateBook(@PathVariable("id") long id, @RequestBody Book book) {
 		logger.info("Updating Book with id {}", id);
 
@@ -314,44 +411,59 @@ public class BookController {
 		return new ResponseEntity<Optional<Book>>(currentBook, HttpStatus.OK);
 	}
 
-	// ------------------- Delete a Book-----------------------------------------
-
-    /**
-	 * Метод удаляет книгу. Пока без файлов.
-	 *
-	 * @param id the id
-	 * @return the response entity
+	/**
+	 * Метод обрабатывает HTTP-запрос метода PUT 
+	 * @param request - запрос, содержащий модель данных класса Book, 
+	 * и возможно MultipartFile - файлы (>=0)
+	 * @param response
+	 * @param ucBuilder
+	 * @return
+	 * @throws IOException
+	 * 
+	 * Ref: https://stackoverflow.com/questions/33920248/angularjs-formdata-file-array-upload/33921749
 	 */
-	@ApiOperation(value = "Удалить книгу ", response = Book.class, tags = "deleteBook")
-	@RequestMapping(value = "/book/{id}", method = RequestMethod.DELETE)
-	public ResponseEntity<?> deleteBook(@PathVariable("id") long id) {
-		logger.info("Fetching & Deleting Book with id {}", id);
+	@RequestMapping(value = "/{id}/files", method = RequestMethod.PUT)
+	public ResponseEntity<?> updateBookAndFiles(@PathVariable("id") long id, MultipartHttpServletRequest request, HttpServletResponse response, UriComponentsBuilder ucBuilder) throws IOException {
+		
+		logger.info("Updating a Book with id {}", id);
 
-		Optional<Book> book = bookService.findById(id);
-		if (book == null) {
-			logger.error("Unable to delete. Book with id {} not found.", id);
-			return new ResponseEntity<CustomErrorType>(new CustomErrorType("Unable to delete. Book with id " + id + " not found."),
+		// Parse JSON to Book
+	    final String bookModel = request.getParameter("model");
+	    Book book = getBookFromJson(bookModel);
+
+		logger.info("Updating a Book: ", ""+book);
+
+		// Check if book exists:
+		if (!bookService.isBookExistWithThisId(book)) {
+			logger.error("Unable to update. Book with id {} not found.", id);
+			return new ResponseEntity<CustomErrorType>(new CustomErrorType("Unable to upate. Book with id " + id + " not found."),
 					HttpStatus.NOT_FOUND);
 		}
-		bookService.deleteBookById(id);
-		book = bookService.findById(id);
-		System.out.println(""+book);
-		return new ResponseEntity<Book>(HttpStatus.NO_CONTENT);
+		
+		// Get MultipartFile files
+	    Iterator<String> iterator = request.getFileNames();
+	    MultipartFile multipartFile = null;
+	    ArrayList<MultipartFile> mpfiles = new ArrayList<MultipartFile>();
+	    
+	    while (iterator.hasNext()) {
+	        multipartFile = request.getFile(iterator.next());
+	        //do something with the file.....
+	        System.out.println("File: " + multipartFile);
+	        System.out.println("Filename: " + multipartFile.getName());
+	        mpfiles.add(multipartFile);
+	    }
+
+	    // Сохраняем данные в форме
+		FormDataList fdl = new FormDataList();
+		fdl.setBook(book);
+		fdl.setFiles(mpfiles);
+		
+		// вызываем метод сервиса на сохранение книги
+		Book returnedBook = bookService.saveBookForm(fdl);
+
+	    HttpHeaders headers = new HttpHeaders();
+		headers.setLocation(ucBuilder.path("/api/books/{id}").buildAndExpand(returnedBook).toUri());
+		return new ResponseEntity<String>(headers, HttpStatus.OK);	    
 	}
 
-	// ------------------- Delete All Books-----------------------------
-
-    /**
-	 * Метод удаляет все книги. Пока без файлов.
-	 *
-	 * @return the response entity
-	 */
-	@ApiOperation(value = "Удалить все книги ", response = Book.class, tags = "deleteAllBooks")
-	@RequestMapping(value = "/book/", method = RequestMethod.DELETE)
-	public ResponseEntity<Book> deleteAllBooks() {
-		logger.info("Deleting All Books");
-
-		bookService.deleteAllBooks();
-		return new ResponseEntity<Book>(HttpStatus.NO_CONTENT);
-	}
 }

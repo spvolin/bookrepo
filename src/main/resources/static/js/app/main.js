@@ -49,7 +49,8 @@ function uploadMultipleFiles(files) {
             multipleFileUploadError.style.display = "none";
             var content = "<p>All Files Uploaded Successfully</p>";
             for(var i = 0; i < response.length; i++) {
-                content += "<p>DownloadUrl : <a href='" + response[i].fileDownloadUri + "' target='_blank'>" + response[i].fileDownloadUri + "</a></p>";
+                content += "<p>DownloadUrl : <a href='" + response[i].fileDownloadUri + "' target='_blank'>" + response[i].fileDownloadUri + "</a>" + 
+                "<button type='button' ng-click='ctrlBook.editBook(b.id)' class='btn btn-success custom-width'>Delete</button>" + "</p>";
             }
             multipleFileUploadSuccess.innerHTML = content;
             multipleFileUploadSuccess.style.display = "block";

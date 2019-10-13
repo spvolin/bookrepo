@@ -16,6 +16,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class FileResponse {
     
+	private String id;
 	private String fileName;
     private String fileDownloadUri;
     private String fileType;

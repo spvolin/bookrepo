@@ -29,51 +29,50 @@
 	function login() {
 	    authCtrl.loading = true;
 	    AuthenticationService
-		    .login(
-			    authCtrl.loginRequest,
-			    function(result) {
-				if (result === true) {
-				    $rootScope.username = $localStorage.currentUser.username;
-				    console.log('$scope.username: '
-					    + $scope.username);
-				    $location.path('/book');
-				} else {
-				    authCtrl.error = 'Username or password is incorrect';
-				    authCtrl.loading = false;
-				}
-			    });
+	    	.login(
+	    		authCtrl.loginRequest,
+			function(result) {
+	    		    if (result === true) {
+	    			$rootScope.username = $localStorage.currentUser.username;
+				console.log('$scope.username: ' + $scope.username);
+				$location.path('/books');
+	    		    } else {
+	    			authCtrl.error = 'Username or password is incorrect';
+	    			authCtrl.loading = false;
+	    		    }
+	    		});
 	}
 	;
+	
 	function register() {
 
 	    var signupRequest = authCtrl.signupRequest;
 	    var username = signupRequest.username;
 
 	    console.log('About to registere user ' + username);
+	    
+	    
 	    AuthenticationService
-		    .registerUser(signupRequest)
-		    .then(
-			    function(response) {
-				console.log('User ' + username
-					+ ' registered successfully');
-				authCtrl.login.successMessage = 'User '
-					+ username + ' registered successfully';
-				authCtrl.login.errorMessage = '';
-				authCtrl.done = true;
-
-				//self.user={};
-				//$scope.signupRequest.$setPristine();
-				$location.path('/book');
-			    },
-			    function(errResponse) {
-				console.error('Error while registering user: '
-					+ username);
-				authCtrl.errorMessage = 'Error while registering user: '
-					+ usernameOrEmail
-					+ ' '
-					+ errResponse.data.errorMessage;
+	    	.registerUser(signupRequest)
+		.then(function(response) {
+		    console.log('User ' + username + ' registered successfully');
+		    authCtrl.login.successMessage = 'User ' + username + ' registered successfully';
+		    authCtrl.login.errorMessage = '';
+		    authCtrl.done = true;
+		    
+		    // self.user={};
+		    // $scope.signupRequest.$setPristine();
+		    $location.path('/books');
+		},
+		
+		function(errResponse) {
+		    console.error('Error while registering user: ' + username);
+		    authCtrl.errorMessage = 'Error while registering user: '
+            			+ usernameOrEmail
+				+ ' '
+				+ errResponse.data.errorMessage;
 				authCtrl.successMessage = '';
-			    });
+		});
 	}
     }
 
