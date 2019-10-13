@@ -45,11 +45,13 @@ Run app:
 4. Signup
 5. Signin
 6. Do some CRUD ops with books:
-- create book with or w/o files uploads (multiple files upload allowed)
-- update book w/o files
-- delete book w/o files
+- create a book with or w/o files uploads (multiple files upload allowed)
+- update a book with or w/o files
+- delete a book with files
 - filter books by Author|Title|ISBN
-- download file of a book
+- download a file of a book
+- delete a file of a book
+
 That's all folk!)
 
 7. To look at REST controller spec open browser at http://localhost:8082/swagger-ui.html

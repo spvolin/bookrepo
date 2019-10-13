@@ -151,10 +151,9 @@ angular.module('bookApp').controller('BookController', [
 									console.log('$localStorage.files#: ' + $localStorage.files.length);
 
 									createBook(self.book);
+									$scope.files = [];
 
 								} else {
-									//updateBook(self.book, self.book.id);
-									//console.log('Book updated with id ', self.book.id);
 									console.log('Updating Book', self.book);
 									console.log('$scope.files#: ' + $scope.files.length);
 									$localStorage.files = $scope.files;

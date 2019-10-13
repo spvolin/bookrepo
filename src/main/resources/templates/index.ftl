@@ -17,7 +17,6 @@
         <script src="js/lib/angular-ui-router.min.js" ></script>
 <!--        <script src="js/lib/angular-route.js" ></script> -->
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.min.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
         <script src="js/lib/localforage.min.js" ></script>
         <script src="js/lib/ngStorage.min.js"></script>
         <script src="js/app/v2/app.js"></script>

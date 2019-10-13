@@ -3,17 +3,6 @@
 
 <!--    ----------------------------------    BookRepo3: Books    ----------------------------------   -->
 
-<div ng-controller="BookController as bc">
-    
-    <ul>
-        <li ng-repeat="menu in menus" >
-            <a ng-click="bc.test(menu)">click me</a>
-        </li>
-    </ul>
-	<a ng-click="bc.mylog('Клик!')">click me</a>
-        
-</div>
-
 <div class="generic-container">
 	<div class="panel panel-default">
 		<!-- Default panel contents -->

@@ -159,65 +159,34 @@ angular.module('bookApp').factory('BookService',
 
                             // get book from response:
                             deferred.resolve(response.data.book);
-//                            console.log('response.status :' + response.status);
-//                            console.log('response.data :' + response.data);
-//                            console.log('response.data.book :' + response.data.book.authorName);
-//                            console.log('response.data.fileResponse :' + response.data.fileResponse);
-//                            console.log('response.data.fileResponse.length :' + response.data.fileResponse.length);
-
-                            // <from file-demo main.js>
                             if (response.data.fileResponse.length > 0) {
                                 multipleFileUploadError.style.display = "none";
                                 var content = "<p>List of book files:</p>";
                                 var fileId = "";
                                 var fileDownloadUri = "";
+                                var fileName = "";
                                 for (var i = 0; i < response.data.fileResponse.length; i++) {
                                     fileId = response.data.fileResponse[i].id;
                                     fileDownloadUri = response.data.fileResponse[i].fileDownloadUri;
+                                    fileName = response.data.fileResponse[i].fileName;
                                     
-                                    //content += "<p>DownloadUrl : <a href='" + response.data.fileResponse[i].fileDownloadUri + "' target='_blank'>" + response.data.fileResponse[i].fileDownloadUri + "</a></p>";
-                                    //content += "<p>DownloadUrl : <a href='" + response.data.fileResponse[i].fileDownloadUri + "' target='_blank'>" + response.data.fileResponse[i].fileDownloadUri + "</a>" + 
-                                    //"<button type='button' ng-click='ctrlBook.editBook(b.id)' class='btn btn-danger custom-width'>Delete</button>" + "</p>";                                    
-
-                                    //content += "<div class='row'><div class='form-group col-md-8'>DownloadUrl : <a href='" + fileDownloadUri + "' target='_blank'>" + fileDownloadUri + "</a></div>" + 
-                                    //"<div class='form-group col-md-4'><button type='button' ng-click='ctrlBook.removeFile(" + bookId + "," + fileId + ")' class='btn btn-danger custom-width'>Delete</button>" + "</div></div>";
-
                                     content += "<div class='row'>"; 
-                                    content += "<div class='form-group col-md-8'>DownloadUrl : <a href='" + fileDownloadUri + "' target='_blank'>" + fileDownloadUri + "</a></div>"; 
-                                    //content += `<div class='form-group col-md-4'><button type="button" ng-click="ctrlBook.removeFile('${bookId}', '${fileId}')" class="btn btn-danger custom-width">Delete</button></div>`;
-                                    //content += `<div class='form-group col-md-4'><button type="button" ng-click="ctrlBook.removeFile()" class="btn btn-danger custom-width">Delete</button></div>`;
-                                    //content += `<div class='form-group col-md-4'><button type="button" onclick="alert('Клик!')" class="btn btn-danger custom-width">Delete</button></div>`;
-                                    
-                                    // <OK>
-                                    //content += `<div ng-controller='BookController as ctrlBook' class='form-group col-md-4'><button type="button" ng-click="ctrlBook.mylog('Клик!))')" class="btn btn-danger custom-width">Delete</button></div>`;
-                                    //content += `<div ng-controller='BookController as bc'><a ng-click="bc.mylog('Клик!!')">Delete</a></div>`;
-                                    content += `<div ng-controller='BookController as bc' class='form-group col-md-4'><button type="button" ng-click="bc.removeFile('${bookId}', '${fileId}')" class="btn btn-danger custom-width">Delete</button></div>`;
-                                    // </OK>
-                                    
-                                    // next line good
-                                    //content += "<div class='form-group col-md-4'><a href='" + urls.BOOK_SERVICE_API + bookId + "/files/" + fileId + "' target='_self'>Delete</a></div>"; 
-                                    content += "</div>"; 
-                                    
-                                    //content += "<div><a ng-click='ctrlBook.removeFile(" + bookId + "," + fileId + ")'>Delete</a></div>";
-                                    
+                                    content += "<div class='form-group col-md-8'>DownloadUrl : <a href='" + fileDownloadUri + "' target='_blank'>" + fileName + "</a></div>"; 
+                                    content += `<div ng-controller='BookController as bc' class='form-group col-md-4'><button type="button" ng-click="bc.removeFile('${bookId}', '${fileId}')" class="btn btn-danger btn-sm">Delete</button></div>`;
+                                    content += "</div>";                                    
                                 }
-                                //content = "</div>";
                                 multipleFileUploadSuccess.innerHTML = content;
                                 $compile(multipleFileUploadSuccess)($rootScope);
-                                //$rootScope.$apply();
                                 multipleFileUploadSuccess.style.display = "block";
                             } else {
                               multipleFileUploadSuccess.innerHTML = "";                            	
                             }
                             
-                            // </from file-demo main.js>
                         },
                         function (errResponse) {
 
-                            // <from file-demo main.js>
                             multipleFileUploadSuccess.style.display = "none";
                             multipleFileUploadError.innerHTML = (response && response.message) || "Some Error Occurred";
-                            // </from file-demo main.js>
 
                             console.error('Error while loading book with id :' + id);
                             deferred.reject(errResponse);
@@ -241,8 +210,6 @@ angular.module('bookApp').factory('BookService',
                 var deferred = $q.defer();
                 var url = urls.BOOK_SERVICE_API + 'files';
                 console.log('bookModel = ' + angular.toJson(bookModel));
-//                console.log('$localStorage.files#: ' + $localStorage.files.length);
-//                console.log('url = ' + url);
                 // http.post FormData comprised of:
                 // - bookModel - json object (a string version)
                 // - book.files - multipart files
@@ -265,8 +232,11 @@ angular.module('bookApp').factory('BookService',
                 })
                     .then(
                         function (response) {
-                            loadAllBooks();
-                            deferred.resolve(response.data);
+                        	// clean input file element of myForm:
+                        	var fileUpload = angular.element(document.getElementById("file_upload"));
+                        	angular.element(fileUpload).val(null);                        	
+                        	loadAllBooks();
+                          deferred.resolve(response.data);
                         },
                         function (errResponse) {
                             console.error('Error while creating Book : ' + errResponse.data.errorMessage);
